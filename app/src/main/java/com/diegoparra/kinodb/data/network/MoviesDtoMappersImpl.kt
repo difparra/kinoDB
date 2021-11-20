@@ -25,8 +25,8 @@ object MoviesDtoMappersImpl : MoviesDtoMappers {
         Movie(
             id = id,
             genres = genreIds?.map { Genre(it, "") } ?: emptyList(),
-            posterPath = getImageUrlOrNull(posterPath) ?: "",
-            backdropPath = getImageUrlOrNull(backdropPath) ?: "",
+            posterUrl = getImageUrlOrNull(posterPath) ?: "",
+            backdropUrl = getImageUrlOrNull(backdropPath) ?: "",
             title = if (!title.isNullOrBlank()) title else originalTitle ?: "",
             overview = overview ?: "",
             language = LocaleUtils.forLanguageTagOrNull(originalLanguage),
@@ -39,8 +39,8 @@ object MoviesDtoMappersImpl : MoviesDtoMappers {
         Movie(
             id = id,
             genres = genres?.map { toGenre(it) } ?: emptyList(),
-            posterPath = getImageUrlOrNull(posterPath) ?: "",
-            backdropPath = getImageUrlOrNull(backdropPath) ?: "",
+            posterUrl = getImageUrlOrNull(posterPath) ?: "",
+            backdropUrl = getImageUrlOrNull(backdropPath) ?: "",
             title = if (!title.isNullOrBlank()) title else originalTitle ?: "",
             overview = overview ?: "",
             language = LocaleUtils.forLanguageTagOrNull(originalLanguage),

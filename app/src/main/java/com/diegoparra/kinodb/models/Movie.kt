@@ -7,8 +7,8 @@ import java.util.Locale
 data class Movie(
     val id: String,
     val genres: List<Genre>,
-    val posterPath: String,
-    val backdropPath: String,
+    val posterUrl: String,
+    val backdropUrl: String,
     val title: String,
     val overview: String,
     val language: Locale?,
