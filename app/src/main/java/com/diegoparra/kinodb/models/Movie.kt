@@ -13,5 +13,7 @@ data class Movie(
     val overview: String,
     val language: Locale?,
     val releaseDate: LocalDate?,
-    @IntRange(from = 0, to = 100) val voteAverage: Int?
+    @IntRange(from = 0, to = 100) val voteAverage: Int?,
+    val runtimeMinutes: Int?,
+    val homepageUrl: String?
 )

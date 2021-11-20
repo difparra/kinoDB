@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.diegoparra.kinodb.R
 import com.diegoparra.kinodb.databinding.HomeFragmentBinding
 import com.diegoparra.kinodb.utils.EventObserver
 import com.diegoparra.kinodb.utils.Resource
@@ -43,14 +45,14 @@ class HomeFragment : Fragment() {
             binding.progressBar.isVisible = it
         }
         viewModel.genreAndMovies.observe(viewLifecycleOwner) {
-            //  TODO:   Show ui when list is empty
+            if (it.isNullOrEmpty()) {
+                binding.errorMessage.text = getString(R.string.info_not_available)
+            }
             adapter.submitList(it)
         }
         viewModel.navigateMovieDetails.observe(viewLifecycleOwner, EventObserver {
-            //  TODO:   Navigate to movie details
-            Snackbar
-                .make(binding.root, "TODO: Navigate to movie details. MovieId = $it", Snackbar.LENGTH_SHORT)
-                .show()
+            val action = HomeFragmentDirections.actionHomeFragmentToMovieDetailsFragment(it)
+            findNavController().navigate(action)
         })
     }
 

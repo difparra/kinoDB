@@ -29,6 +29,7 @@ class HomeViewModel @Inject constructor(
     //      ---------   Loading genres
 
     private val _genres = MutableStateFlow<List<Genre>>(emptyList())
+
     init {
         viewModelScope.launch {
             _loading.value = true
@@ -61,26 +62,12 @@ class HomeViewModel @Inject constructor(
                     }
                     .getOrNull()
             }.filterNotNull()
-
-            /*
-            //  Loading sync
-            genres.mapNotNull { genre ->
-                Timber.d("Loading movies for genre $genre")
-                moviesRepo.getMoviesByGenre(genre.id)
-                    .map { GenreWithMovies(genre, it) }
-                    .onFailure {
-                        Timber.e("Error loading movies for genre $genre\nException: $it\nException class: ${it.javaClass}")
-                        _failure.value = Event(it)
-                    }
-                    .getOrNull()
-            }*/
         }
         .onEach {
             Timber.d("Calling onEach to set loading to false")
             _loading.value = false
         }
     val genreAndMovies = _genreAndMovies.asLiveData()
-
 
 
     //      ---------   OnMovieClick

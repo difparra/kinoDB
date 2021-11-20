@@ -3,8 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/background_gradient.xml" value="0.27395833333333336" />
         <entry key="app/src/main/res/drawable/ic_broken_image.xml" value="0.27395833333333336" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25384615384615383" />
+        <entry key="app/src/main/res/layout/fragment_movie_details.xml" value="0.25384615384615383" />
         <entry key="app/src/main/res/layout/home_fragment.xml" value="0.25384615384615383" />
         <entry key="app/src/main/res/layout/list_item_genre_with_movies.xml" value="0.25384615384615383" />
         <entry key="app/src/main/res/layout/list_item_movie.xml" value="0.25384615384615383" />

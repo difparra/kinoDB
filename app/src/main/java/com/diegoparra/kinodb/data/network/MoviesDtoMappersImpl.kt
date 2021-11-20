@@ -31,7 +31,9 @@ object MoviesDtoMappersImpl : MoviesDtoMappers {
             overview = overview ?: "",
             language = LocaleUtils.forLanguageTagOrNull(originalLanguage),
             releaseDate = LocalDateUtils.parseOrNull(releaseDate),
-            voteAverage = (voteAverage?.times(10))?.toInt()
+            voteAverage = (voteAverage?.times(10))?.toInt(),
+            runtimeMinutes = null,
+            homepageUrl = null
         )
     }
 
@@ -45,7 +47,9 @@ object MoviesDtoMappersImpl : MoviesDtoMappers {
             overview = overview ?: "",
             language = LocaleUtils.forLanguageTagOrNull(originalLanguage),
             releaseDate = LocalDateUtils.parseOrNull(releaseDate),
-            voteAverage = (voteAverage?.times(10))?.toInt()
+            voteAverage = (voteAverage?.times(10))?.toInt(),
+            runtimeMinutes = runtime,
+            homepageUrl = homepageUrl
         )
     }
 
