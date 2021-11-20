@@ -1,7 +1,8 @@
-package com.diegoparra.kinodb
+package com.diegoparra.kinodb.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.diegoparra.kinodb.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
