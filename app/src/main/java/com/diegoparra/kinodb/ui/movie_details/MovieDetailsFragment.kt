@@ -22,6 +22,7 @@ import com.diegoparra.kinodb.databinding.FragmentMovieDetailsBinding
 import com.diegoparra.kinodb.models.Genre
 import com.diegoparra.kinodb.models.Movie
 import com.diegoparra.kinodb.utils.Resource
+import com.diegoparra.kinodb.utils.getErrorMessage
 import com.diegoparra.kinodb.utils.loadImage
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -56,22 +57,20 @@ class MovieDetailsFragment : Fragment() {
     private fun subscribeUi() {
         viewModel.movie.observe(viewLifecycleOwner) {
             binding.progressBar.isVisible = it is Resource.Loading
+            binding.content.isVisible = it is Resource.Success
             binding.errorMessage.isVisible = it is Resource.Error
+
             when (it) {
                 is Resource.Loading -> {
                 }
-                is Resource.Success -> {
-                    renderMovieDetails(it.data)
-                }
-                is Resource.Error -> {
-                    renderFailure(it.failure)
-                }
+                is Resource.Success -> renderMovieDetails(it.data)
+                is Resource.Error -> renderFailure(it.failure)
             }
         }
     }
 
     private fun renderFailure(exception: Exception) {
-        binding.errorMessage.text = exception.message
+        binding.errorMessage.text = exception.getErrorMessage(binding.root.context)
     }
 
     private fun renderMovieDetails(movie: Movie) {

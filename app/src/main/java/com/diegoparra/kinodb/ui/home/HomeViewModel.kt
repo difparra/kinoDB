@@ -1,9 +1,6 @@
 package com.diegoparra.kinodb.ui.home
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.diegoparra.kinodb.data.MoviesRepository
 import com.diegoparra.kinodb.models.Genre
 import com.diegoparra.kinodb.models.GenreWithMovies
@@ -19,61 +16,46 @@ class HomeViewModel @Inject constructor(
     private val moviesRepo: MoviesRepository
 ) : ViewModel() {
 
-    private val _failure = MutableStateFlow<Event<Exception>?>(null)
-    val failure = _failure.asLiveData()
-
-    private val _loading = MutableStateFlow(false)
-    val loading = _loading.asLiveData()
-
+    private val _toastFailure = MutableLiveData<Event<Exception>>()
+    val toastFailure: LiveData<Event<Exception>> = _toastFailure.distinctUntilChanged()
 
     //      ---------   Loading genres
 
-    private val _genres = MutableStateFlow<List<Genre>>(emptyList())
+    private val _genresAndMovies =
+        MutableStateFlow<Resource<List<GenreWithMovies>>>(Resource.Loading)
+    val genresAndMovies = _genresAndMovies.asLiveData()
 
     init {
         viewModelScope.launch {
-            _loading.value = true
-            moviesRepo.getGenres().fold(
-                onSuccess = { _genres.value = it },
-                onFailure = { _failure.value = Event(it) }
-            )
+            _genresAndMovies.value = moviesRepo
+                .getGenres()
+                .map {
+                    Timber.d("Loaded genres: ${it.joinToString { it.name }}. Proceding to load movies for each genre.")
+                    addMoviesByGenreToListAsync(it)
+                }
+                .toResource()
         }
     }
 
-
-    //      ---------   Loading movies by genre
-
-    private val _genreAndMovies = _genres
-        .onEach {
-            Timber.d("Calling onEach to set loading to true")
-            _loading.value = true
-        }
-        .map { genres ->
-            Timber.d("Loaded genres: ${genres.joinToString { it.name }}. Proceding to load movies for each genre.")
-
-            //  Loading async
-            genres.mapAsync { genre ->
+    private suspend fun addMoviesByGenreToListAsync(genres: List<Genre>): List<GenreWithMovies> =
+        genres
+            .mapAsync { genre ->
                 Timber.d("Loading movies for genre $genre")
                 moviesRepo.getMoviesByGenre(genre.id)
                     .map { GenreWithMovies(genre, it) }
                     .onFailure {
                         Timber.e("Error loading movies for genre $genre\nException: $it\nException class: ${it.javaClass}")
-                        _failure.value = Event(it)
+                        _toastFailure.value = Event(it)
                     }
                     .getOrNull()
-            }.filterNotNull()
-        }
-        .onEach {
-            Timber.d("Calling onEach to set loading to false")
-            _loading.value = false
-        }
-    val genreAndMovies = _genreAndMovies.asLiveData()
+            }
+            .filterNotNull()
 
 
     //      ---------   OnMovieClick
 
     private val _navigateMovieDetails = MutableLiveData<Event<String>>()
-    val navigateMovieDetails = _navigateMovieDetails
+    val navigateMovieDetails: LiveData<Event<String>> = _navigateMovieDetails
 
     fun onMovieClick(movieId: String) {
         _navigateMovieDetails.value = Event(movieId)

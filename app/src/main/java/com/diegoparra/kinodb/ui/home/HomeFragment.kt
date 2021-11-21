@@ -12,9 +12,12 @@ import com.diegoparra.kinodb.R
 import com.diegoparra.kinodb.databinding.HomeFragmentBinding
 import com.diegoparra.kinodb.utils.EventObserver
 import com.diegoparra.kinodb.utils.Resource
+import com.diegoparra.kinodb.utils.getErrorMessage
+import com.diegoparra.kinodb.utils.getLogMessage
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.net.UnknownHostException
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -36,20 +39,42 @@ class HomeFragment : Fragment() {
         binding.genreWithMoviesList.setHasFixedSize(true)
         adapter = GenreWithMoviesAdapter(viewModel::onMovieClick)
         binding.genreWithMoviesList.adapter = adapter
-
         subscribeUi()
     }
 
     private fun subscribeUi() {
-        viewModel.loading.observe(viewLifecycleOwner) {
-            binding.progressBar.isVisible = it
-        }
-        viewModel.genreAndMovies.observe(viewLifecycleOwner) {
-            if (it.isNullOrEmpty()) {
-                binding.errorMessage.text = getString(R.string.info_not_available)
+        viewModel.genresAndMovies.observe(viewLifecycleOwner) {
+            binding.progressBar.isVisible = it is Resource.Loading
+
+            if (it is Resource.Success) {
+                val data = it.data
+                adapter.submitList(data)
+
+                if (data.isNullOrEmpty()) {
+                    binding.errorMessage.text = getString(R.string.info_not_available)
+                    binding.errorMessage.isVisible = true
+                }
             }
-            adapter.submitList(it)
+
+            binding.errorMessage.isVisible = it is Resource.Error
+            if (it is Resource.Error) {
+                val errorMessage = it.failure.getErrorMessage(binding.root.context)
+                binding.errorMessage.text = errorMessage
+            }
         }
+
+        viewModel.toastFailure.observe(viewLifecycleOwner, EventObserver {
+            if (it is UnknownHostException) {
+                Snackbar.make(
+                    binding.root,
+                    R.string.network_connection_error,
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            } else {
+                Timber.e(it.getLogMessage())
+            }
+        })
+
         viewModel.navigateMovieDetails.observe(viewLifecycleOwner, EventObserver {
             val action = HomeFragmentDirections.actionHomeFragmentToMovieDetailsFragment(it)
             findNavController().navigate(action)

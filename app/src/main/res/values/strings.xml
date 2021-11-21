@@ -9,4 +9,8 @@
     <string name="info_not_available">Información no disponible.</string>
     <string name="info_not_available_short">N/D.</string>
 
+
+    <string name="network_connection_error">Parece haber un problema con tu conexión a internet. Por favor revisa tu conexión a internet y vuelve a intentarlo.</string>
+    <string name="unknown_error">Ha ocurrido un error desconocido: %s.</string>
+
 </resources>
