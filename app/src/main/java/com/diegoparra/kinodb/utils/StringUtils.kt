@@ -6,8 +6,8 @@ package com.diegoparra.kinodb.utils
 fun String.removeCaseAndAccents() =
     this.lowercase()
         .replace('á', 'a').replace('à', 'a')
-        .replace('é', 'e').replace('à', 'a')
-        .replace('í', 'i').replace('à', 'a')
-        .replace('ó', 'o').replace('à', 'a')
-        .replace('ú', 'u').replace('à', 'a')
+        .replace('é', 'e').replace('è', 'e')
+        .replace('í', 'i').replace('ì', 'i')
+        .replace('ó', 'o').replace('ò', 'o')
+        .replace('ú', 'u').replace('ù', 'u')
         .replace('ñ', 'n')

@@ -8,11 +8,12 @@ object LocaleUtils {
         return if (languageTag.isNullOrEmpty()) {
             null
         } else {
-            try {
-                Locale.forLanguageTag(languageTag)
-            } catch (e: Exception) {
-                Timber.e("Couldn't parse languageTag: $languageTag. Exception: $e")
+            val locale = Locale.forLanguageTag(languageTag)
+            return if(locale.toLanguageTag() == "und") {
+                Timber.e("Couldn't parse languageTag: $languageTag")
                 null
+            } else {
+                locale
             }
         }
     }

@@ -46,7 +46,8 @@ class MoviesDaoTest {
         releaseDate = LocalDate.of(2021, 7, 28),
         voteAverage = 79,
         runtimeMinutes = null,
-        homepageUrl = null
+        homepageUrl = null,
+        popularity = 0.0
     )
     private val movie2 = MovieEntity(
         movieId = "436969",
@@ -58,7 +59,8 @@ class MoviesDaoTest {
         releaseDate = LocalDate.of(2021, 7, 28),
         voteAverage = 80,
         runtimeMinutes = 132,
-        homepageUrl = null
+        homepageUrl = null,
+        popularity = 0.0
     )
 
 
@@ -141,7 +143,7 @@ class MoviesDaoTest {
         )
 
         assertThat(dao.getMoviesByGenre(genre1.genreId)).isEqualTo(listOf(movie2))
-        assertThat(dao.getMoviesByGenre(genre2.genreId)).isEqualTo(listOf(movie1, movie2))
+        assertThat(dao.getMoviesByGenre(genre2.genreId)).containsExactly(movie1, movie2)
     }
 
     @Test
@@ -166,8 +168,8 @@ class MoviesDaoTest {
 
     @Test
     fun searchMovieByName_resultsFound_returnMovies() = testDispatcher.runBlockingTest {
-        val mMovie1 = movie1.copy("Jungle Cruise")
-        val mMovie2 = movie2.copy("The Suicide Squad")
+        val mMovie1 = movie1.copy(title = "Jungle Cruise", normalisedTitle = "jungle cruise")
+        val mMovie2 = movie2.copy(title = "The Suicide Squad", normalisedTitle = "the suicide squad")
         dao.insertOrUpdateAllMovies(listOf(mMovie1, mMovie2))
 
         val result = dao.searchMovieByName("uis")
@@ -176,8 +178,8 @@ class MoviesDaoTest {
 
     @Test
     fun searchMovieByName_ignoreCase_returnResult() = testDispatcher.runBlockingTest {
-        val mMovie1 = movie1.copy("Jungle Cruise")
-        val mMovie2 = movie2.copy("The Suicide Squad")
+        val mMovie1 = movie1.copy(title = "Jungle Cruise", normalisedTitle = "jungle cruise")
+        val mMovie2 = movie2.copy(title = "The Suicide Squad", normalisedTitle = "the suicide squad")
         dao.insertOrUpdateAllMovies(listOf(mMovie1, mMovie2))
 
         assertThat(dao.searchMovieByName("Suicid")).isEqualTo(listOf(mMovie2))
@@ -186,8 +188,8 @@ class MoviesDaoTest {
 
     @Test
     fun searchMovieByName_ignoreAccents_returnResult() = testDispatcher.runBlockingTest {
-        val mMovie1 = movie1.copy("Jungle Cruise")
-        val mMovie2 = movie2.copy("El escuadrón suicida")
+        val mMovie1 = movie1.copy(title = "Jungle Cruise", normalisedTitle = "jungle cruise")
+        val mMovie2 = movie2.copy(title = "El escuadrón suicida", normalisedTitle = "el escuadron suicida")
         dao.insertOrUpdateAllMovies(listOf(mMovie1, mMovie2))
 
         assertThat(dao.searchMovieByName("adrón")).isEqualTo(listOf(mMovie2))
