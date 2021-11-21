@@ -12,6 +12,7 @@ import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -51,6 +52,9 @@ class MovieDetailsFragment : Fragment() {
             binding.toolbar,
             findNavController()
         )
+        binding.btnFavourite.setOnClickListener {
+            viewModel.toggleFavourite()
+        }
         subscribeUi()
     }
 
@@ -66,6 +70,9 @@ class MovieDetailsFragment : Fragment() {
                 is Resource.Success -> renderMovieDetails(it.data)
                 is Resource.Error -> renderFailure(it.failure)
             }
+        }
+        viewModel.isFavourite.observe(viewLifecycleOwner) {
+            binding.btnFavourite.isSelected = it
         }
     }
 

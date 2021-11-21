@@ -18,6 +18,8 @@
     <string name="no_results_local">No se han encontrado resultados. Revisa tu conexión a internet para obtener más coincidencias.</string>
     <string name="no_results_network">No se encontraron resultados.</string>
 
+    <string name="empty_favourites">Parece que aún no has agregado favoritos… Para añadir un favorito, haz click sobre una película en el catálogo, y en la vista de detalle encontrarás el botón de agregar favorito.</string>
+
     <string name="network_connection_error">Parece haber un problema con tu conexión a internet. Por favor revisa tu conexión a internet y vuelve a intentarlo.</string>
     <string name="unknown_error">Ha ocurrido un error desconocido: %s.</string>
 

@@ -2,10 +2,7 @@ package com.diegoparra.kinodb.di
 
 import android.content.Context
 import androidx.room.Room
-import com.diegoparra.kinodb.data.local.KinoDatabase
-import com.diegoparra.kinodb.data.local.MoviesDao
-import com.diegoparra.kinodb.data.local.MoviesEntityMappers
-import com.diegoparra.kinodb.data.local.MoviesEntityMappersImpl
+import com.diegoparra.kinodb.data.local.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,6 +31,12 @@ class RoomModule {
     @Provides
     fun providesMovieEntityMappers(): MoviesEntityMappers {
         return MoviesEntityMappersImpl
+    }
+
+    @Singleton
+    @Provides
+    fun providesFavouritesDao(kinoDatabase: KinoDatabase): FavouritesDao {
+        return kinoDatabase.favouritesDao()
     }
 
 }

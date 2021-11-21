@@ -1,5 +1,6 @@
 package com.diegoparra.kinodb.data
 
+import com.diegoparra.kinodb.data.local.FavouritesDao
 import com.diegoparra.kinodb.data.local.MoviesDao
 import com.diegoparra.kinodb.data.local.MoviesEntityMappers
 import com.diegoparra.kinodb.data.network.MoviesApi
@@ -8,8 +9,10 @@ import com.diegoparra.kinodb.di.IoDispatcher
 import com.diegoparra.kinodb.models.Genre
 import com.diegoparra.kinodb.models.Movie
 import com.diegoparra.kinodb.utils.*
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -19,6 +22,7 @@ class MoviesRepositoryImpl @Inject constructor(
     private val dao: MoviesDao,
     private val entityMappers: MoviesEntityMappers,
     private val dtoToEntityMappers: MoviesDtoToEntityMappers,
+    private val favouritesDao: FavouritesDao,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : MoviesRepository {
 
@@ -66,6 +70,7 @@ class MoviesRepositoryImpl @Inject constructor(
             }
         )
 
+
     override suspend fun searchMovieByName(title: String): Either<Exception, Data<List<Movie>>> =
         callApiUpdateLocalAndReturnData(
             methodName = "searchMovieByName",
@@ -84,15 +89,38 @@ class MoviesRepositoryImpl @Inject constructor(
         )
 
 
-    //      ----------      Util functions to log result
-
-    private fun <L, R> Either<L, R>.logResult(
-        onSuccess: (R) -> String,
-        onFailure: (L) -> String
-    ): Either<L, R> {
-        return this.onSuccess { Timber.d(onSuccess(it)) }
-            .onFailure { Timber.e(onFailure(it)) }
+    override suspend fun toggleFavourite(movieId: String) = withContext(dispatcher) {
+        favouritesDao.isFavourite(movieId).let { isFavourite ->
+            if (isFavourite) {
+                favouritesDao.removeFavourite(movieId)
+            } else {
+                favouritesDao.addFavourite(movieId)
+            }
+        }
     }
+
+    override fun isFavourite(movieId: String): Flow<Either<Exception, Boolean>> {
+        return favouritesDao.observeIsFavourite(movieId)
+            .map { Either.runCatching { it } }
+            .flowOn(dispatcher)
+    }
+
+    override fun getFavourites(): Flow<Either<Exception, List<Movie>>> {
+        return favouritesDao.observeFavouritesIds()
+            .map {
+                coroutineScope {
+                    val moviesAsyncList = it.map { movieId ->
+                        async { getMovieById(movieId).map { it.content } }
+                    }
+                    val movies = moviesAsyncList.awaitAll()
+                    movies.reduceFailuresOrRight()
+                }
+            }
+            .flowOn(dispatcher)
+    }
+
+
+    //      ----------      Util functions
 
     private suspend fun <P, Dto, Entity, T> callApiUpdateLocalAndReturnData(
         methodName: String,
@@ -137,6 +165,14 @@ class MoviesRepositoryImpl @Inject constructor(
                 },
                 onFailure = { "exception from $methodName($param):\n ${it.getLogMessage()}" }
             )
+    }
+
+    private fun <L, R> Either<L, R>.logResult(
+        onSuccess: (R) -> String,
+        onFailure: (L) -> String
+    ): Either<L, R> {
+        return this.onSuccess { Timber.d(onSuccess(it)) }
+            .onFailure { Timber.e(onFailure(it)) }
     }
 
 }

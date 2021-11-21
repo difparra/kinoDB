@@ -176,6 +176,16 @@
     </androidx.core.widget.NestedScrollView>
 
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_favourite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/padding_standard"
+        android:contentDescription="@string/menu_favourites"
+        android:src="@drawable/sel_bookmark"
+        app:layout_anchor="@+id/appbar"
+        app:layout_anchorGravity="bottom|right|end" />
+
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="match_parent"
