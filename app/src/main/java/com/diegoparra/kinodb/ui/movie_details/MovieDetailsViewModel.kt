@@ -43,7 +43,6 @@ class MovieDetailsViewModel @Inject constructor(
     fun toggleFavourite() {
         viewModelScope.launch {
             moviesRepo.toggleFavourite(_movieId)
-
         }
     }
 

@@ -6,7 +6,6 @@ import com.diegoparra.kinodb.models.Genre
 import com.diegoparra.kinodb.models.GenreWithMovies
 import com.diegoparra.kinodb.models.Movie
 import com.diegoparra.kinodb.test_utils.MainCoroutineRule
-import com.diegoparra.kinodb.test_utils.captureValues
 import com.diegoparra.kinodb.test_utils.getOrAwaitValue
 import com.diegoparra.kinodb.utils.Data
 import com.diegoparra.kinodb.utils.Either
@@ -73,6 +72,32 @@ class HomeViewModelTest {
             listOf(GenreWithMovies(genre1, moviesGenre1), GenreWithMovies(genre2, moviesGenre2))
         assertThat(homeViewModel.genresAndMovies.getOrAwaitValue())
             .isEqualTo(Resource.Success(data))
+    }
+
+    @Test
+    fun genreAndMovies_failureFromApiAndNoLocalData() = mainCoroutineRule.runBlockingTest {
+        val exception = NullPointerException()
+        Mockito.`when`(moviesRepository.getGenres()).thenReturn(Either.Left(exception))
+        homeViewModel = HomeViewModel(moviesRepository)
+
+        assertThat(homeViewModel.genresAndMovies.getOrAwaitValue())
+            .isEqualTo(Resource.Error(exception))
+    }
+
+    @Test
+    fun onMovieClick_setNavigateMovieDetails() = mainCoroutineRule.runBlockingTest {
+        Mockito.`when`(moviesRepository.getGenres())
+            .thenReturn(Either.Right(Data.fromServer(listOf(genre1, genre2))))
+        Mockito.`when`(moviesRepository.getMoviesByGenre(genre1.id))
+            .thenReturn(Either.Right(Data.fromServer(listOf(movie1, movie2))))
+        Mockito.`when`(moviesRepository.getMoviesByGenre(genre2.id))
+            .thenReturn(Either.Right(Data.fromServer(listOf(movie1))))
+        homeViewModel = HomeViewModel(moviesRepository)
+
+        val movieId = "1"
+        homeViewModel.onMovieClick(movieId)
+        assertThat(homeViewModel.navigateMovieDetails.getOrAwaitValue().peekContent())
+            .isEqualTo(movieId)
     }
 
 }
