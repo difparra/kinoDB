@@ -76,13 +76,13 @@ class HomeFragment : Fragment() {
         })
 
         viewModel.navigateMovieDetails.observe(viewLifecycleOwner, EventObserver {
-            val action = HomeFragmentDirections.actionHomeFragmentToMovieDetailsFragment(it)
+            val action = HomeFragmentDirections.actionGlobalMovieDetailsFragment(it)
             findNavController().navigate(action)
         })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         _binding = null
     }
 

@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Kino DB</string>
 
+    <string name="menu_home">Películas</string>
+    <string name="menu_search">Buscar</string>
+    <string name="menu_favourites">Favoritos</string>
+
     <string name="movie_overview">Resumen</string>
     <string name="movie_language">Idioma</string>
     <string name="movie_release_date">Fecha de lanzamiento</string>
@@ -9,6 +13,10 @@
     <string name="info_not_available">Información no disponible.</string>
     <string name="info_not_available_short">N/D.</string>
 
+    <string name="search">Buscar</string>
+    <string name="empty_query">El campo buscar está vacío. Ingresa algo para comenzar una búsqueda.</string>
+    <string name="no_results_local">No se han encontrado resultados. Revisa tu conexión a internet para obtener más coincidencias.</string>
+    <string name="no_results_network">No se encontraron resultados.</string>
 
     <string name="network_connection_error">Parece haber un problema con tu conexión a internet. Por favor revisa tu conexión a internet y vuelve a intentarlo.</string>
     <string name="unknown_error">Ha ocurrido un error desconocido: %s.</string>

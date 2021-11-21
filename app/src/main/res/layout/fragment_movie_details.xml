@@ -192,7 +192,7 @@
         android:layout_margin="@dimen/padding_big"
         android:padding="@dimen/padding_big"
         android:textAlignment="center"
-        android:textAppearance="?attr/textAppearanceBody1"
+        android:textAppearance="?attr/textAppearanceBody2"
         android:visibility="gone"
         tools:text="Something went wrong. Try again later." />
 

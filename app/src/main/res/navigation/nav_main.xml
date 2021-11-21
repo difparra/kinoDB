@@ -10,9 +10,6 @@
         android:name="com.diegoparra.kinodb.ui.home.HomeFragment"
         android:label="home_fragment"
         tools:layout="@layout/home_fragment" >
-        <action
-            android:id="@+id/action_homeFragment_to_movieDetailsFragment"
-            app:destination="@id/movieDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/movieDetailsFragment"
@@ -23,5 +20,18 @@
             android:name="movie_id"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.diegoparra.kinodb.ui.search.SearchFragment"
+        android:label="search_fragment"
+        tools:layout="@layout/search_fragment" />
+    <fragment
+        android:id="@+id/favouritesFragment"
+        android:name="com.diegoparra.kinodb.ui.favourites.FavouritesFragment"
+        android:label="favourites_fragment"
+        tools:layout="@layout/favourites_fragment" />
+    <action
+        android:id="@+id/action_global_movieDetailsFragment"
+        app:destination="@id/movieDetailsFragment" />
 
 </navigation>

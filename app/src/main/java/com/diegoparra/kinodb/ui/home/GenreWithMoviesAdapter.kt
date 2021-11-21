@@ -25,7 +25,7 @@ class GenreWithMoviesAdapter(
         onMovieClick: (movieId: String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private val adapter = MoviesAdapter(onMovieClick)
+        private val adapter = MoviesHomeAdapter(onMovieClick)
 
         init {
             binding.moviesList.setHasFixedSize(true)

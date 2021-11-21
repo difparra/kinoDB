@@ -9,9 +9,9 @@ import com.diegoparra.kinodb.databinding.ListItemMovieBinding
 import com.diegoparra.kinodb.models.Movie
 import com.diegoparra.kinodb.utils.loadImage
 
-class MoviesAdapter(
+class MoviesHomeAdapter(
     private val onMovieClick: (movieId: String) -> Unit
-) : ListAdapter<Movie, MoviesAdapter.ViewHolder>(DiffCallback) {
+) : ListAdapter<Movie, MoviesHomeAdapter.ViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder.from(parent, onMovieClick)
