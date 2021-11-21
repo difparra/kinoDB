@@ -1,5 +1,7 @@
 package com.diegoparra.kinodb.data
 
+import com.diegoparra.kinodb.data.local.MoviesDao
+import com.diegoparra.kinodb.data.local.MoviesEntityMappers
 import com.diegoparra.kinodb.data.network.MoviesApi
 import com.diegoparra.kinodb.data.network.MoviesDtoMappers
 import com.diegoparra.kinodb.di.IoDispatcher
@@ -14,63 +16,72 @@ import javax.inject.Inject
 class MoviesRepositoryImpl @Inject constructor(
     private val api: MoviesApi,
     private val dtoMappers: MoviesDtoMappers,
+    private val dao: MoviesDao,
+    private val entityMappers: MoviesEntityMappers,
+    private val dtoToEntityMappers: MoviesDtoToEntityMappers,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : MoviesRepository {
 
-    override suspend fun getGenres(): Either<Exception, List<Genre>> = withContext(dispatcher) {
-        Timber.d("getGenres() called")
-        Either
-            .runCatching {
-                val genreDtos = api.getGenres()
-                dtoMappers.toGenreList(genreDtos)
+    override suspend fun getGenres(): Either<Exception, Data<List<Genre>>> =
+        callApiUpdateLocalAndReturnData(
+            methodName = "getGenres",
+            param = Unit,
+            apiData = { api.getGenres() },
+            dtoMapper = dtoMappers::toGenreList,
+            daoData = { dao.getGenres() },
+            entityMapper = entityMappers::toGenreList,
+            updateLocal = {
+                val genresDb = dtoToEntityMappers.toGenreEntityList(it)
+                dao.insertOrUpdateAllGenres(genresDb)
             }
-            .logResult(
-                onSuccess = { "returning from getGenres():\n ${it.joinToString("\n")}" },
-                onFailure = { "exception from getGenres():\n ${it.getLogMessage()}" }
-            )
-    }
+        )
 
-    override suspend fun getMoviesByGenre(genreId: String): Either<Exception, List<Movie>> =
-        withContext(dispatcher) {
-            Timber.d("getMoviesByGenre called with genreId = $genreId")
-            Either
-                .runCatching {
-                    val movieDtos = api.getMoviesByGenre(genreId)
-                    dtoMappers.toMovieList(movieDtos)
-                }
-                .logResult(
-                    onSuccess = { "returning from getMoviesByGenre($genreId):\n ${it.joinToString("\n")}" },
-                    onFailure = { "exception from getMoviesByGenre($genreId):\n ${it.getLogMessage()}" }
-                )
-        }
 
-    override suspend fun getMovieById(movieId: String): Either<Exception, Movie> =
-        withContext(dispatcher) {
-            Timber.d("getMovieById called with movieId = $movieId")
-            Either
-                .runCatching {
-                    val movieDto = api.getMovieById(movieId)
-                    dtoMappers.toMovie(movieDto)
-                }
-                .logResult(
-                    onSuccess = { "returning from getMovieById($movieId):\n $it" },
-                    onFailure = { "exception from getMovieById($movieId):\n ${it.getLogMessage()}" }
-                )
-        }
+    override suspend fun getMoviesByGenre(genreId: String): Either<Exception, Data<List<Movie>>> =
+        callApiUpdateLocalAndReturnData(
+            methodName = "getMoviesByGenre",
+            param = genreId,
+            apiData = api::getMoviesByGenre,
+            dtoMapper = dtoMappers::toMovieList,
+            daoData = dao::getMoviesByGenre,
+            entityMapper = entityMappers::toMovieList,
+            updateLocal = {
+                val moviesDb = dtoToEntityMappers.toMovieWithGenresList(it)
+                dao.insertAllMovieWithGenres(moviesDb)
+            }
+        )
 
-    override suspend fun searchMovieByName(title: String): Either<Exception, List<Movie>> =
-        withContext(dispatcher) {
-            Either
-                .runCatching {
-                    Timber.d("searchMovieByName called with title = $title")
-                    val movieDtos = api.searchMovieByName(title)
-                    dtoMappers.toMovieList(movieDtos)
-                }
-                .logResult(
-                    onSuccess = { "returning from searchMovieByName($title):\n ${it.joinToString("\n")}" },
-                    onFailure = { "exception from searchMovieByName($title):\n ${it.getLogMessage()}" }
-                )
-        }
+
+    override suspend fun getMovieById(movieId: String): Either<Exception, Data<Movie>> =
+        callApiUpdateLocalAndReturnData(
+            methodName = "getMovieById",
+            param = movieId,
+            apiData = api::getMovieById,
+            dtoMapper = dtoMappers::toMovie,
+            daoData = dao::getMovieById,
+            entityMapper = entityMappers::toMovie,
+            updateLocal = {
+                val movieDb = dtoToEntityMappers.toMovieWithGenresDb(it)
+                dao.insertMovieWithGenres(movieDb)
+            }
+        )
+
+    override suspend fun searchMovieByName(title: String): Either<Exception, Data<List<Movie>>> =
+        callApiUpdateLocalAndReturnData(
+            methodName = "searchMovieByName",
+            param = title,
+            apiData = api::searchMovieByName,
+            dtoMapper = dtoMappers::toMovieList,
+            daoData = dao::searchMovieByName,
+            entityMapper = entityMappers::toMovieList,
+            updateLocal = {
+                val moviesDb = dtoToEntityMappers.toMovieWithGenresList(it)
+                dao.insertAllMovieWithGenres(moviesDb)
+            },
+            returnOnFailure = { localData, e ->
+                Either.Right(Data.fromLocal(localData ?: emptyList()))
+            }
+        )
 
 
     //      ----------      Util functions to log result
@@ -81,6 +92,51 @@ class MoviesRepositoryImpl @Inject constructor(
     ): Either<L, R> {
         return this.onSuccess { Timber.d(onSuccess(it)) }
             .onFailure { Timber.e(onFailure(it)) }
+    }
+
+    private suspend fun <P, Dto, Entity, T> callApiUpdateLocalAndReturnData(
+        methodName: String,
+        param: P,
+        apiData: suspend (P) -> Dto,
+        dtoMapper: (Dto) -> T,
+        daoData: suspend (P) -> Entity?,
+        entityMapper: (Entity) -> T,
+        updateLocal: suspend (Dto) -> Unit,
+        returnOnSuccess: (serverData: T) -> Either<Exception, Data<T>> = {
+            Either.Right(Data.fromServer(it))
+        },
+        returnOnFailure: (localData: T?, Exception) -> Either<Exception, Data<T>> = { localData, e ->
+            if (localData == null || (localData is List<*> && localData.isEmpty())) {
+                Either.Left(e)
+            } else {
+                Either.Right(Data.fromLocal(localData))
+            }
+        }
+    ): Either<Exception, Data<T>> = withContext(dispatcher) {
+        Timber.d("$methodName called!. param = $param")
+        Either.runCatching { apiData(param) }
+            .onSuccess {
+                Timber.d("$methodName. Data successfully collected from api. Saving data locally.")
+                updateLocal(it)
+            }
+            .fold(
+                onSuccess = {
+                    val serverData = dtoMapper(it)
+                    returnOnSuccess(serverData)
+                },
+                onFailure = {
+                    Timber.d("$methodName. Exception while getting data from api. ${it.getLogMessage()}")
+                    val localData = daoData(param)?.let(entityMapper)
+                    returnOnFailure(localData, it)
+                }
+            )
+            .logResult(
+                onSuccess = {
+                    "returning from $methodName($param). Source = ${it.source}," +
+                            "content = ${it.content.let { if (it is List<*>) it.joinToString("\n") else it }}"
+                },
+                onFailure = { "exception from $methodName($param):\n ${it.getLogMessage()}" }
+            )
     }
 
 }

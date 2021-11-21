@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.diegoparra.kinodb.data.MoviesRepository
 import com.diegoparra.kinodb.models.Movie
 import com.diegoparra.kinodb.utils.Resource
+import com.diegoparra.kinodb.utils.map
 import com.diegoparra.kinodb.utils.toResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,10 @@ class MovieDetailsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _movie.value = moviesRepo.getMovieById(movieId).toResource()
+            _movie.value = moviesRepo
+                .getMovieById(movieId)
+                .map { it.content }
+                .toResource()
         }
     }
 

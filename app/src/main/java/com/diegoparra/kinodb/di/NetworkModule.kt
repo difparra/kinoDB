@@ -1,5 +1,7 @@
 package com.diegoparra.kinodb.di
 
+import com.diegoparra.kinodb.data.MoviesDtoToEntityMappers
+import com.diegoparra.kinodb.data.MoviesDtoToEntityMappersImpl
 import com.diegoparra.kinodb.data.network.MoviesApi
 import com.diegoparra.kinodb.data.network.MoviesDtoMappers
 import com.diegoparra.kinodb.data.network.MoviesDtoMappersImpl
@@ -74,6 +76,11 @@ object NetworkModule {
     @Provides
     fun providesMoviesDtoMappers(): MoviesDtoMappers {
         return MoviesDtoMappersImpl
+    }
+
+    @Provides
+    fun providesMoviesDtoToEntityMappers(): MoviesDtoToEntityMappers {
+        return MoviesDtoToEntityMappersImpl
     }
 
 }

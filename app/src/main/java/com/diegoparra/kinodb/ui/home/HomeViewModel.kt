@@ -30,8 +30,8 @@ class HomeViewModel @Inject constructor(
             _genresAndMovies.value = moviesRepo
                 .getGenres()
                 .map {
-                    Timber.d("Loaded genres: ${it.joinToString { it.name }}. Proceding to load movies for each genre.")
-                    addMoviesByGenreToListAsync(it)
+                    Timber.d("Loaded genres (source = ${it.source}): ${it.content.joinToString { it.name }}. Proceeding to load movies for each genre.")
+                    addMoviesByGenreToListAsync(it.content)
                 }
                 .toResource()
         }
@@ -42,7 +42,7 @@ class HomeViewModel @Inject constructor(
             .mapAsync { genre ->
                 Timber.d("Loading movies for genre $genre")
                 moviesRepo.getMoviesByGenre(genre.id)
-                    .map { GenreWithMovies(genre, it) }
+                    .map { GenreWithMovies(genre, it.content) }
                     .onFailure {
                         Timber.e("Error loading movies for genre $genre\nException: $it\nException class: ${it.javaClass}")
                         _toastFailure.value = Event(it)
